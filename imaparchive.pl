@@ -56,9 +56,14 @@ my $separator = $imap->separator
 # We are in INBOX now, get list of messages
 my $archivetime = time - $agediff;
 
-#my @messages    = $imap->messages
-my @messages = $imap->before( $imap->Rfc3501_date($archivetime) )
-  or croak "Error getting list of messages: " . $imap->LastError;
+my @messages = $imap->before( $imap->Rfc3501_date($archivetime) );
+if ($imap->LastError) {
+    croak "Error getting list of messages: " . $imap->LastError;
+}
+if (! scalar @messages) {
+    say "No messages found.";
+    exit 0
+}
 say "Checking " . scalar(@messages) . " messages.";
 
 # For every message
