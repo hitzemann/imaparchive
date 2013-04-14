@@ -5,14 +5,17 @@ use Mail::IMAPClient;
 use Date::Parse;
 use Carp;
 use IO::Socket::SSL;
+use Config::Simple;
 
-# configuration parameters
-my $server        = qw(server.goes.here);
-my $user          = qw(your.username);
-my $password      = qw(your.password);
-my $root          = qw(INBOX);
-my $archiveprefix = qw(Archive);
-my $agediff       = 2_678_400;                 # 31 days
+# configuration parameters are in imaparchive.ini
+my $config = new Config::Simple();
+$config->read('imaparchive.ini') or croak $config->error();
+my $server        = $config->param('server');
+my $user          = $config->param('user');
+my $password      = $config->param('password');
+my $root          = $config->param('root');
+my $archiveprefix = $config->param('archiveprefix');
+my $agediff       = $config->param('agediff');
 
 # This will be our foldercache to save lots of IMAP calls
 my %folderCache;
@@ -52,8 +55,9 @@ my $separator = $imap->separator
 
 # We are in INBOX now, get list of messages
 my $archivetime = time - $agediff;
+
 #my @messages    = $imap->messages
-my @messages    = $imap->before($imap->Rfc3501_date($archivetime))
+my @messages = $imap->before( $imap->Rfc3501_date($archivetime) )
   or croak "Error getting list of messages: " . $imap->LastError;
 say "Checking " . scalar(@messages) . " messages.";
 
@@ -83,7 +87,8 @@ for my $message (@messages) {
         ## Create hash of messages to be moved into which folder
         $moveHash{$archiveFolder} .= $message . ",";
         $numMoved++;
-    } else {
+    }
+    else {
         croak("Message was younger than asked for via before()");
     }
     if ( 0 == $numOfMessages % 10 ) {
