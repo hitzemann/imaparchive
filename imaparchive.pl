@@ -74,12 +74,11 @@ for my $message (@messages) {
     $numOfMessages++;
     ## Find received date
     my $deliveryDate = $imap->get_header( $message, "Delivery-Date" )
-      or carp "Error getting Delivery-Date header: ", $imap->LastError;
+      or $imap->get_header( $message, "Date" );
     if ( !defined($deliveryDate) ) {
-        $deliveryDate = $imap->get_header( $message, "Date" )
-          or carp "Error getting Date header: ", $imap->LastError;
+        carp "Error getting header: ", $imap->LastError;
+        next;
     }
-    next unless defined $deliveryDate;
     $deliveryDate = str2time($deliveryDate);
     if ( $deliveryDate <= $archivetime ) {
         my ( undef, undef, undef, undef, $deliveryMonth, $deliveryYear, undef,
