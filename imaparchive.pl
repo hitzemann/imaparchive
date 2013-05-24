@@ -57,12 +57,12 @@ my $separator = $imap->separator
 my $archivetime = time - $agediff;
 
 my @messages = $imap->before( $imap->Rfc3501_date($archivetime) );
-if ($imap->LastError) {
+if ( $imap->LastError ) {
     croak "Error getting list of messages: " . $imap->LastError;
 }
-if (! scalar @messages) {
+if ( !scalar @messages ) {
     say "No messages found.";
-    exit 0
+    exit 0;
 }
 say "Checking " . scalar(@messages) . " messages.";
 
@@ -74,7 +74,11 @@ for my $message (@messages) {
     $numOfMessages++;
     ## Find received date
     my $deliveryDate = $imap->get_header( $message, "Delivery-Date" )
-      or carp "Error getting header: ", $imap->LastError;
+      or carp "Error getting Delivery-Date header: ", $imap->LastError;
+    if ( !defined($deliveryDate) ) {
+        $deliveryDate = $imap->get_header( $message, "Date" )
+          or carp "Error getting Date header: ", $imap->LastError;
+    }
     next unless defined $deliveryDate;
     $deliveryDate = str2time($deliveryDate);
     if ( $deliveryDate <= $archivetime ) {
