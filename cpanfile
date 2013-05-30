@@ -6,3 +6,4 @@ requires 'Carp';
 requires 'IO::Socket::SSL';
 requires 'Digest::HMAC_MD5';
 requires 'Config::Simple';
+requires 'Getopt::Long';

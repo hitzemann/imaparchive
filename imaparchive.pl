@@ -6,16 +6,46 @@ use Date::Parse;
 use Carp;
 use IO::Socket::SSL;
 use Config::Simple;
+use Getopt::Long qw(:config auto_version);
 
-# configuration parameters are in imaparchive.ini
+our $VERSION = "0.01";
+
+my $server;
+my $user;
+my $password;
+my $root;
+my $archiveprefix;
+my $agediff;
+my $configfile;
 my $config = new Config::Simple();
-$config->read('imaparchive.ini') or croak $config->error();
-my $server        = $config->param('server');
-my $user          = $config->param('user');
-my $password      = $config->param('password');
-my $root          = $config->param('root');
-my $archiveprefix = $config->param('archiveprefix');
-my $agediff       = $config->param('agediff');
+
+GetOptions(
+    "server|s:s"                  => \$server,
+    "user|u:s"                    => \$user,
+    "password|pw|p:s"             => \$password,
+    "root|r:s"                    => \$root,
+    "archiveprefix|prefix|ap|p:s" => \$archiveprefix,
+    "agediff|ad|a:2678400"        => \$agediff,
+    "config|c:s"                  => \$configfile
+);
+
+if ( !defined($configfile) ) {
+    croak "Server needed."   unless defined($server);
+    croak "Username needed." unless defined($user);
+    croak "Password needed." unless defined($password);
+    $root          = 'INBOX'   unless defined($root);
+    $archiveprefix = 'Archive' unless defined($archiveprefix);
+    $agediff       = 2678400   unless defined($archiveprefix);
+}
+else {
+    $config->read($configfile) or croak $config->error();
+    $server        = $config->param('server');
+    $user          = $config->param('user');
+    $password      = $config->param('password');
+    $root          = $config->param('root');
+    $archiveprefix = $config->param('archiveprefix');
+    $agediff       = $config->param('agediff');
+}
 
 # This will be our foldercache to save lots of IMAP calls
 my %folderCache;
