@@ -1,3 +1,6 @@
+# ATTENTION
+This project is no longer under active development. It will be archived and read-only.
+
 # NAME
 
 imaparchive.pl - Archive your IMAP emails into monthly archive folders
